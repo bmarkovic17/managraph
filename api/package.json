@@ -1,0 +1,18 @@
+{
+    "name": "managraph-api",
+    "description": "Minimalistic application for managing Managraph instances",
+    "author": {
+        "name": "Boris Marković",
+        "email": "bmarkovic17@outlook.com"
+    },
+    "version": "0.0.1",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bmarkovic17/managraph.git"
+    },
+    "keywords": [
+        "managraph",
+        "database",
+        "instance management"
+    ]
+}
