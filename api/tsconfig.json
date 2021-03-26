@@ -4,6 +4,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "sourceMap": true,
+    "module": "ES2020",
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true
   },
