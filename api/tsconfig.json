@@ -5,6 +5,7 @@
     "outDir": "dist",
     "sourceMap": true,
     "module": "ES2020",
+    "moduleResolution": "node",
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true
   },
