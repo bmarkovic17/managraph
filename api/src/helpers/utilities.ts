@@ -1,4 +1,5 @@
-import StorageInfo from '../types/storageInfo';
+import StorageInfo from '../types/storageInfo.js';
+import config from './config.js';
 
 export function getNumber (value: any): number | null {
     let numericValue: number | null = null;
@@ -20,4 +21,14 @@ export function initStorageInfo (): StorageInfo {
         memoryUsage: null,
         diskUsage: null
     };
+}
+
+export function getErrorMessage (error: Error, text?: string): string {
+    let errorMessage = text ?? 'There was an unexpected error';
+
+    if (config.IsNotProduction) {
+        errorMessage = errorMessage.concat(': ', error.message);
+    }
+
+    return errorMessage;
 }

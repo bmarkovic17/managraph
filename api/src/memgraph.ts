@@ -16,8 +16,6 @@ export default class Memgraph {
         try {
             await this.driver.verifyConnectivity();
         } catch (error) {
-            console.error(`There was an error while trying to establish a connection to ${this.uri}:`, error);
-
             return Promise.reject(new Error(`Couldn't connect to ${this.uri}`));
         }
 
@@ -44,6 +42,8 @@ export default class Memgraph {
 
         return promise;
     };
+
+    public getUri = () => this.uri;
 
     public close = async () =>
         await this.driver.close();
