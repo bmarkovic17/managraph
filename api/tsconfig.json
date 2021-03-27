@@ -4,7 +4,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "sourceMap": true,
-    "module": "ES2020",
+    "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true
