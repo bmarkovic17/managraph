@@ -1,7 +1,7 @@
 import neo4j from 'neo4j-driver';
 import camelCase from 'camelcase';
-import StorageInfo from './types/storageInfo.js';
-import { getNumber, initStorageInfo } from './helpers/utilities.js';
+import StorageInfo from '../types/storageInfo.js';
+import { getNumber, initStorageInfo } from '../helpers/utilities.js';
 
 export default class Memgraph {
     private uri;
