@@ -1,30 +1,28 @@
-import config from './config.js';
 import express from 'express';
-import neo4j from 'neo4j-driver';
+import config from './helpers/config.js';
+import Memgraph from './memgraph.js';
 
 const port = config.ExpressPort;
 const server = express();
-
-const driver = neo4j.driver('bolt://localhost:7687');
-const session = driver.session({ defaultAccessMode: neo4j.session.READ });
+const memgraph = new Memgraph('localhost:7687');
 
 try {
-    const result = await session.run('SHOW STORAGE INFO;');
-    const records = result.records;
+    const storageInfo = await memgraph.getStorageInfo();
 
-    records.forEach(record => console.log(record.toObject()));
-
-    records.forEach(record => console.log({ 0: record.get('storage info') }));
-    records.forEach(record => console.log({ 1: record.get('value') }));
+    console.log(storageInfo);
+} catch (error) {
+    console.error('There was an error during fetching of storage info:', error);
 } finally {
-    await session.close();
+    await memgraph.close();
 }
 
-await driver.close();
-
-server.listen(port, () => console.info(`Server started on http://localhost:${port}`));
+const serverInstance = server.listen(port, () => console.info(`Server started on http://localhost:${port}`));
 
 process.on('uncaughtException', error => {
     console.error('There was an uncaught error', error);
     process.exit(1);
 });
+
+process.on('SIGTERM', () =>
+    serverInstance.close(() =>
+        console.log('Process terminated')));
