@@ -9,15 +9,6 @@ export default class Managraph {
         this.memgraphs = new Map<string, Memgraph>();
     }
 
-    public getAllInstances = async () => {
-        for (const memgraph of this.memgraphs) {
-            await memgraph[1].setConnectionStatus();
-            await memgraph[1].setStorageInfo();
-        }
-
-        return this.memgraphs;
-    }
-
     public addInstance = async (name: string, uri: string) => {
         if (name == null) {
             throw new ApiError(400, 'Memgraph name must be provided');
@@ -32,15 +23,15 @@ export default class Managraph {
 
         this.memgraphs.forEach(memgraph => {
             if (memgraph.getMemgraphInfo().name === sanitizedName) {
-                throw new ApiError(422, `Memgraph instance with name ${name} already exists`);
+                throw new ApiError(422, `Memgraph instance with name ${sanitizedName} already exists`);
             }
 
             if (memgraph.getMemgraphInfo().uri === sanitizedUri) {
-                throw new ApiError(422, `Memgraph instance with URI ${uri} already exists`);
+                throw new ApiError(422, `Memgraph instance with URI ${sanitizedUri} already exists`);
             }
         });
 
-        const memgraphInfo = initMemgraphInfo(name, uri);
+        const memgraphInfo = initMemgraphInfo(sanitizedName, sanitizedUri);
         const memgraph = new Memgraph(memgraphInfo);
 
         await memgraph.setConnectionStatus();
@@ -49,5 +40,27 @@ export default class Managraph {
         this.memgraphs.set(memgraphInfo.id, memgraph);
 
         return memgraph.getMemgraphInfo();
+    }
+
+    public getInstance = async (id: string) => {
+        if (!this.memgraphs.has(id)) {
+            throw new ApiError(404, `There isn't any tracking instance with ID ${id}`);
+        }
+
+        const memgraph = this.memgraphs.get(id);
+
+        await memgraph?.setConnectionStatus();
+        await memgraph?.setStorageInfo();
+
+        return memgraph;
+    }
+
+    public getAllInstances = async () => {
+        for (const memgraph of this.memgraphs) {
+            await memgraph[1].setConnectionStatus();
+            await memgraph[1].setStorageInfo();
+        }
+
+        return this.memgraphs;
     }
 }

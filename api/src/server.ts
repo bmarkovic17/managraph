@@ -1,6 +1,6 @@
 import express from 'express';
 import config from './helpers/config.js';
-import { getErrorMessage } from './helpers/utilities.js';
+import { getErrorMessage, getErrorStatusCode } from './helpers/utilities.js';
 import Managraph from './classes/managraph.js';
 import MemgraphInfo from './types/memgraphInfo.js';
 
@@ -18,11 +18,12 @@ server
 
             res
                 .status(201)
+                .set('Location', `/api/v1/managraph/${memgraphInfo.id}`)
                 .json(memgraphInfo);
         } catch (error) {
             res
-                .status(error.statusCode ?? 500)
-                .json(error.message ?? 'There was an error');
+                .status(getErrorStatusCode(error))
+                .json(getErrorMessage(error));
         }
     })
     .get(async (_req, res) => {
@@ -43,8 +44,25 @@ server
                 .json(response);
         } catch (error) {
             res
-                .status(error.statusCode ?? 500)
-                .json(error.message ?? 'There was an error');
+                .status(getErrorStatusCode(error))
+                .json(getErrorMessage(error));
+        }
+    });
+
+server
+    .route('/api/v1/managraph/:id')
+    .get(async (req, res) => {
+        try {
+            const instance = await managraph.getInstance(req.params.id);
+            const response = instance?.getMemgraphInfo();
+
+            res
+                .status(200)
+                .json(response);
+        } catch (error) {
+            res
+                .status(getErrorStatusCode(error))
+                .json(getErrorMessage(error));
         }
     });
 

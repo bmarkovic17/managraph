@@ -44,3 +44,7 @@ export function getErrorMessage (error: Error, text?: string): string {
 
     return errorMessage;
 }
+
+export function getErrorStatusCode (error: any): number {
+    return error?.statusCode ?? 500;
+}
