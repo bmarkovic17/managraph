@@ -1,6 +1,6 @@
 import { initMemgraphInfo } from '../helpers/utilities.js';
 import MemgraphInfo from '../types/memgraphInfo.js';
-import ApiError from './ApiError.js';
+import ApiError from './apiError.js';
 import Memgraph from './memgraph.js';
 
 export default class Managraph {
@@ -32,7 +32,13 @@ export default class Managraph {
             }
         }
 
-        const memgraphInfo = initMemgraphInfo(sanitizedName, sanitizedUri);
+        let memgraphInfo;
+
+        // Check for duplicate IDs
+        do {
+            memgraphInfo = initMemgraphInfo(sanitizedName, sanitizedUri);
+        } while (this.isValidId(memgraphInfo.id) === false);
+
         const memgraph = new Memgraph(memgraphInfo);
 
         this.memgraphs.push(memgraph);
@@ -87,4 +93,7 @@ export default class Managraph {
 
         return memgraph;
     }
+
+    private isValidId = (id: string) =>
+        this.memgraphs.findIndex(memgraph => memgraph.getId() === id) === -1;
 }
