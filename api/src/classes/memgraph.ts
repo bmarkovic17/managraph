@@ -1,49 +1,54 @@
 import neo4j from 'neo4j-driver';
 import camelCase from 'camelcase';
-import StorageInfo from '../types/storageInfo.js';
+import MemgraphInfo from '../types/memgraphInfo.js';
 import { getNumber, initStorageInfo } from '../helpers/utilities.js';
 
 export default class Memgraph {
-    private uri;
     private driver;
+    private memgraphInfo;
 
-    constructor (uri: string) {
-        this.uri = uri;
-        this.driver = neo4j.driver(`bolt://${uri}`);
+    constructor (memgraphInfo: MemgraphInfo) {
+        this.memgraphInfo = memgraphInfo;
+        this.driver = neo4j.driver(`bolt://${memgraphInfo.uri}`);
     };
 
-    public getStorageInfo = async () => {
+    public setStorageInfo = async () => {
         try {
-            await this.driver.verifyConnectivity();
-        } catch (error) {
-            return Promise.reject(new Error(`Couldn't connect to ${this.uri}`));
-        }
+            const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
 
-        const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
+            const result = await session.run('SHOW STORAGE INFO;');
+            const records = result.records;
 
-        const storageInfo = initStorageInfo();
-
-        const result = await session.run('SHOW STORAGE INFO;');
-        const records = result.records;
-
-        const promise = new Promise<StorageInfo>(resolve => {
             records.forEach(record => {
                 const key: string = camelCase(record.get('storage info'));
 
-                if (key in storageInfo) {
-                    storageInfo[key] = getNumber(record.get('value'));
+                if (key in this.memgraphInfo.storageInfo) {
+                    this.memgraphInfo.storageInfo[key] = getNumber(record.get('value'));
                 }
             });
 
-            resolve(storageInfo);
-        });
-
-        await session.close();
-
-        return promise;
+            await session.close();
+        } catch {
+            this.memgraphInfo.active = false;
+            this.memgraphInfo.storageInfo = initStorageInfo();
+        }
     };
 
-    public getUri = () => this.uri;
+    public getMemgraphInfo = () => this.memgraphInfo;
+
+    public setConnectionStatus = async () => {
+        try {
+            const serverInfo = await this.driver.verifyConnectivity();
+
+            if (serverInfo.address != null) {
+                this.memgraphInfo.active = true;
+            } else {
+                this.memgraphInfo.active = false;
+            }
+        } catch (error) {
+            this.memgraphInfo.active = false;
+        }
+    }
 
     public close = async () =>
         await this.driver.close();

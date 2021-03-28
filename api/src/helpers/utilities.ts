@@ -1,3 +1,5 @@
+import { nanoid } from 'nanoid';
+import MemgraphInfo from '../types/memgraphInfo.js';
 import StorageInfo from '../types/storageInfo.js';
 import config from './config.js';
 
@@ -20,6 +22,16 @@ export function initStorageInfo (): StorageInfo {
         averageDegree: null,
         memoryUsage: null,
         diskUsage: null
+    };
+}
+
+export function initMemgraphInfo (name: string, uri: string): MemgraphInfo {
+    return {
+        id: nanoid(6),
+        name: name,
+        uri: uri,
+        active: false,
+        storageInfo: initStorageInfo()
     };
 }
 

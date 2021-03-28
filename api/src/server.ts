@@ -2,7 +2,7 @@ import express from 'express';
 import config from './helpers/config.js';
 import { getErrorMessage } from './helpers/utilities.js';
 import Managraph from './classes/managraph.js';
-import StorageInfo from './types/storageInfo.js';
+import MemgraphInfo from './types/memgraphInfo.js';
 
 const port = config.ExpressPort;
 const server = express();
@@ -12,14 +12,13 @@ server.use(express.json());
 
 server
     .route('/api/v1/managraph')
-    .post((req, res) => {
+    .post(async (req, res) => {
         try {
-            managraph.addInstance(req.body.name, req.body.uri);
+            const memgraphInfo = await managraph.addInstance(req.body.name, req.body.uri);
 
             res
                 .status(201)
-                // TODO: postaviti location header s linkom na resurs
-                .json();
+                .json(memgraphInfo);
         } catch (error) {
             res
                 .status(error.statusCode ?? 500)
@@ -28,14 +27,14 @@ server
     })
     .get(async (_req, res) => {
         try {
-            const response: StorageInfo[] = [];
-            const instances = managraph.getAllInstances();
+            const response: MemgraphInfo[] = [];
+            const instances = await managraph.getAllInstances();
 
             for (const instance of instances) {
                 try {
-                    response.push(await instance[1].getStorageInfo());
+                    response.push(instance[1].getMemgraphInfo());
                 } catch (error) {
-                    console.error(getErrorMessage(error, `There was an error during fetching of storage info for Memgraph instance at ${instance[1].getUri()}`));
+                    console.error(getErrorMessage(error, `There was an error during fetching of storage info for Memgraph instance at ${instance[1].getMemgraphInfo().uri}`));
                 }
             }
 
