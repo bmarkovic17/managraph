@@ -28,17 +28,17 @@ api
     })
     .get(async (_req, res) => {
         try {
-            let memgraphs: MemgraphInfo[] = [];
+            let memgraphsInfo: MemgraphInfo[] = [];
 
             try {
-                memgraphs = await managraph.getMemgraphs();
+                memgraphsInfo = await managraph.getMemgraphsInfo();
             } catch (error) {
                 console.error(getErrorMessage(error));
             }
 
             res
                 .status(200)
-                .json(memgraphs);
+                .json(memgraphsInfo);
         } catch (error) {
             res
                 .status(getErrorStatusCode(error))
@@ -48,13 +48,26 @@ api
 
 api
     .route('/api/v1/managraph/:id')
-    .get(async (req, res) => {
+    .post(async (req, res) => {
         try {
-            const memgraph = await managraph.getMemgraphs(req.params.id);
+            const records = await managraph.runCypherQuery(req.params.id, req.body.query);
 
             res
                 .status(200)
-                .json(memgraph[0]);
+                .json(records);
+        } catch (error) {
+            res
+                .status(getErrorStatusCode(error))
+                .json(getErrorMessage(error));
+        }
+    })
+    .get(async (req, res) => {
+        try {
+            const memgraphInfo = (await managraph.getMemgraphsInfo(req.params.id))[0];
+
+            res
+                .status(200)
+                .json(memgraphInfo);
         } catch (error) {
             res
                 .status(getErrorStatusCode(error))

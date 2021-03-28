@@ -10,7 +10,7 @@ export default class Managraph {
         this.memgraphs = [];
     }
 
-    public addMemgraph = async (name: string, uri: string) => {
+    public addMemgraph = (name: string, uri: string) => {
         if (name == null) {
             throw new ApiError(400, 'Memgraph name must be provided');
         }
@@ -37,23 +37,23 @@ export default class Managraph {
 
         this.memgraphs.push(memgraph);
 
-        return await memgraph.getMemgraphInfo();
+        return memgraph.getMemgraphInfo();
     }
 
-    public getMemgraphs = async (id?: string) => {
-        let memgraphs: MemgraphInfo[] = [];
+    public getMemgraphsInfo = (id?: string) => {
+        let memgraphs: Promise<MemgraphInfo[]>;
 
         if (id != null) {
-            const memgraph = this.memgraphs.find(memgraph => memgraph.getId() === id);
+            const memgraph = this.getMemgraph(id);
 
             if (memgraph != null) {
-                memgraphs.push(await memgraph.getMemgraphInfo());
+                memgraphs = Promise.all([memgraph.getMemgraphInfo()]);
             } else {
                 throw new ApiError(404, `There isn't any tracking instance with ID ${id}`);
             }
         } else {
             try {
-                memgraphs = await Promise.all(
+                memgraphs = Promise.all(
                     this.memgraphs.map(memgraph =>
                         memgraph.getMemgraphInfo()));
             } catch {
@@ -62,5 +62,29 @@ export default class Managraph {
         }
 
         return memgraphs;
+    }
+
+    public runCypherQuery = (id: string, query: string) => {
+        if (id == null) {
+            throw new ApiError(400, 'Memgraph ID must be provided');
+        }
+
+        const memgraph = this.getMemgraph(id);
+
+        if (memgraph == null) {
+            throw new ApiError(404, `There isn't any tracking instance with ID ${id}`);
+        }
+
+        return memgraph.runCypherQuery(query);
+    }
+
+    private getMemgraph = (id: string) => {
+        let memgraph;
+
+        if (id != null) {
+            memgraph = this.memgraphs.find(memgraph => memgraph.getId() === id);
+        }
+
+        return memgraph;
     }
 }

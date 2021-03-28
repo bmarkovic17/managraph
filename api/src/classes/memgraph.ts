@@ -1,6 +1,7 @@
 import neo4j from 'neo4j-driver';
 import camelCase from 'camelcase';
 import MemgraphInfo from '../types/memgraphInfo.js';
+import ApiError from './ApiError.js';
 import { getNumber, initStorageInfo } from '../helpers/utilities.js';
 
 export default class Memgraph {
@@ -25,9 +26,9 @@ export default class Memgraph {
     }
 
     public setStorageInfo = async () => {
-        try {
-            const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
+        const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
 
+        try {
             const result = await session.run('SHOW STORAGE INFO;');
             const records = result.records;
 
@@ -38,11 +39,11 @@ export default class Memgraph {
                     this.memgraphInfo.storageInfo[key] = getNumber(record.get('value'));
                 }
             });
-
-            await session.close();
         } catch {
             this.memgraphInfo.active = false;
             this.memgraphInfo.storageInfo = initStorageInfo();
+        } finally {
+            await session.close();
         }
     };
 
@@ -60,13 +61,30 @@ export default class Memgraph {
         }
     }
 
-    public close = async () =>
-        await this.driver.close();
+    public runCypherQuery = async (query: string) => {
+        const isActive = (await this.getMemgraphInfo()).active;
 
-    private refreshMemgraphInfo = async () => {
-        await Promise.all([
-            await this.setConnectionStatus(),
-            await this.setStorageInfo()
-        ]);
+        if (isActive) {
+            const session = this.driver.session();
+
+            try {
+                const result = await session.run(query);
+
+                return result.records;
+            } finally {
+                await session.close();
+            }
+        } else {
+            throw new ApiError(503, `Connection to Memgraph at ${this.getUri()} isn't active`);
+        }
     }
+
+    public close = () =>
+        this.driver.close();
+
+    private refreshMemgraphInfo = () =>
+        Promise.all([
+            this.setConnectionStatus(),
+            this.setStorageInfo()
+        ]);
 }
