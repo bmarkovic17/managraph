@@ -35,14 +35,8 @@ export function initMemgraphInfo (name: string, uri: string): MemgraphInfo {
     };
 }
 
-export function getErrorMessage (error: Error, text?: string): string {
-    let errorMessage = text ?? 'There was an unexpected error';
-
-    if (config.IsNotProduction) {
-        errorMessage = errorMessage.concat(': ', error.message);
-    }
-
-    return errorMessage;
+export function getErrorMessage (error: Error): string {
+    return config.IsNotProduction && error.stack != null ? error.stack : error.message;
 }
 
 export function getErrorStatusCode (error: any): number {

@@ -19,7 +19,7 @@
         "database",
         "instance management"
     ],
-    "main": "dist/server",
+    "main": "dist/api",
     "scripts": {
         "prepare": "cd .. && husky install api/.husky",
         "lint": "eslint . --ext .ts",

@@ -5,21 +5,21 @@ import Managraph from './classes/managraph.js';
 import MemgraphInfo from './types/memgraphInfo.js';
 
 const port = config.ExpressPort;
-const server = express();
+const api = express();
 const managraph = new Managraph();
 
-server.use(express.json());
+api.use(express.json());
 
-server
+api
     .route('/api/v1/managraph')
     .post(async (req, res) => {
         try {
-            const memgraphInfo = await managraph.addInstance(req.body.name, req.body.uri);
+            const memgraph = await managraph.addMemgraph(req.body.name, req.body.uri);
 
             res
                 .status(201)
-                .set('Location', `/api/v1/managraph/${memgraphInfo.id}`)
-                .json(memgraphInfo);
+                .set('Location', `/api/v1/managraph/${memgraph.id}`)
+                .json(memgraph);
         } catch (error) {
             res
                 .status(getErrorStatusCode(error))
@@ -28,20 +28,17 @@ server
     })
     .get(async (_req, res) => {
         try {
-            const response: MemgraphInfo[] = [];
-            const instances = await managraph.getAllInstances();
+            let memgraphs: MemgraphInfo[] = [];
 
-            for (const instance of instances) {
-                try {
-                    response.push(instance[1].getMemgraphInfo());
-                } catch (error) {
-                    console.error(getErrorMessage(error, `There was an error during fetching of storage info for Memgraph instance at ${instance[1].getMemgraphInfo().uri}`));
-                }
+            try {
+                memgraphs = await managraph.getMemgraphs();
+            } catch (error) {
+                console.error(getErrorMessage(error));
             }
 
             res
                 .status(200)
-                .json(response);
+                .json(memgraphs);
         } catch (error) {
             res
                 .status(getErrorStatusCode(error))
@@ -49,16 +46,15 @@ server
         }
     });
 
-server
+api
     .route('/api/v1/managraph/:id')
     .get(async (req, res) => {
         try {
-            const instance = await managraph.getInstance(req.params.id);
-            const response = instance?.getMemgraphInfo();
+            const memgraph = await managraph.getMemgraphs(req.params.id);
 
             res
                 .status(200)
-                .json(response);
+                .json(memgraph[0]);
         } catch (error) {
             res
                 .status(getErrorStatusCode(error))
@@ -66,13 +62,13 @@ server
         }
     });
 
-const serverInstance = server.listen(port, () => console.info(`Server started on http://localhost:${port}`));
+const server = api.listen(port, () => console.info(`Server started on http://localhost:${port}`));
 
 process.on('uncaughtException', error => {
-    console.error(getErrorMessage(error, 'There was an uncaught error'));
+    console.error(getErrorMessage(error));
     process.exit(1);
 });
 
 process.on('SIGTERM', () =>
-    serverInstance.close(() =>
+    server.close(() =>
         console.info('Process terminated')));

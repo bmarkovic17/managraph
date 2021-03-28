@@ -12,6 +12,18 @@ export default class Memgraph {
         this.driver = neo4j.driver(`bolt://${memgraphInfo.uri}`);
     };
 
+    public getId = () => this.memgraphInfo.id;
+
+    public getName = () => this.memgraphInfo.name;
+
+    public getUri = () => this.memgraphInfo.uri;
+
+    public getMemgraphInfo = async () => {
+        await this.refreshMemgraphInfo();
+
+        return this.memgraphInfo;
+    }
+
     public setStorageInfo = async () => {
         try {
             const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
@@ -34,8 +46,6 @@ export default class Memgraph {
         }
     };
 
-    public getMemgraphInfo = () => this.memgraphInfo;
-
     public setConnectionStatus = async () => {
         try {
             const serverInfo = await this.driver.verifyConnectivity();
@@ -52,4 +62,11 @@ export default class Memgraph {
 
     public close = async () =>
         await this.driver.close();
+
+    private refreshMemgraphInfo = async () => {
+        await Promise.all([
+            await this.setConnectionStatus(),
+            await this.setStorageInfo()
+        ]);
+    }
 }
