@@ -7,5 +7,7 @@ const production = (process.env.PRODUCTION ?? 'false') === 'true';
 
 export default {
     ExpressPort: isNaN(port) ? 3000 : port,
-    IsNotProduction: !production
+    IsNotProduction: !production,
+    TestInstanceName: process.env.TEST_MEMGRAPH_INSTANCE_NAME ?? 'memgraph',
+    TestInstanceUri: process.env.TEST_MEMGRAPH_INSTANCE_URI ?? 'localhost:7687'
 };
