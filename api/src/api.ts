@@ -73,6 +73,19 @@ api
                 .status(getErrorStatusCode(error))
                 .json(getErrorMessage(error));
         }
+    })
+    .delete(async (req, res) => {
+        try {
+            await managraph.removeMemgraph(req.params.id);
+
+            res
+                .status(204)
+                .json();
+        } catch (error) {
+            res
+                .status(getErrorStatusCode(error))
+                .json(getErrorMessage(error));
+        }
     });
 
 const server = api.listen(port, () => console.info(`Server started on http://localhost:${port}`));

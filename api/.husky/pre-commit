@@ -2,4 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 cd api
-npm run build
+npm run build && npm run test

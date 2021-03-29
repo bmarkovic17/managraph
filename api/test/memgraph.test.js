@@ -7,6 +7,8 @@ import { initMemgraphInfo } from '../dist/helpers/utilities.js';
 let memgraph;
 
 describe('MemGraph', function () {
+    this.timeout(5000);
+
     describe('Active', function () {
         before(function () {
             const memgraphInfo = initMemgraphInfo(config.TestInstanceName, config.TestInstanceUri);
@@ -26,22 +28,22 @@ describe('MemGraph', function () {
             assert.notEqual(memgraph.getUri(), null);
         });
 
-        it('Should resolve memgraph info object', function () {
-            assert.doesNotReject(memgraph.getMemgraphInfo);
+        it('Should return active connection', async function () {
+            await memgraph.setConnectionStatus();
+
+            assert.equal(memgraph.isActive(), true);
         });
 
         it('Should return memgraph info object', async function () {
             const memgraphInfo = await memgraph.getMemgraphInfo();
 
             assert.equal(typeof memgraphInfo, 'object');
-            assert.equal(memgraphInfo.active, true);
-
             assert.equal(typeof memgraphInfo.storageInfo, 'object');
             assert.equal(typeof memgraphInfo.storageInfo.edgeCount, 'number');
             assert.equal(typeof memgraphInfo.storageInfo.averageDegree, 'number');
             assert.equal(typeof memgraphInfo.storageInfo.memoryUsage, 'number');
             assert.equal(typeof memgraphInfo.storageInfo.diskUsage, 'number');
-        }).timeout(5000); // TODO: investigate slow performance sometimes
+        }); // TODO: investigate slow performance sometimes
 
         it('Should set storage info', function () {
             assert.doesNotReject(memgraph.setStorageInfo);
@@ -81,22 +83,22 @@ describe('MemGraph', function () {
             assert.notEqual(memgraph.getUri(), null);
         });
 
-        it('Should resolve memgraph info object', function () {
-            assert.doesNotReject(memgraph.getMemgraphInfo);
+        it('Should return not active connection', async function () {
+            await memgraph.setConnectionStatus();
+
+            assert.equal(memgraph.isActive(), false);
         });
 
         it('Should return memgraph info object', async function () {
             const memgraphInfo = await memgraph.getMemgraphInfo();
 
             assert.equal(typeof memgraphInfo, 'object');
-            assert.equal(memgraphInfo.active, false);
-
             assert.equal(typeof memgraphInfo.storageInfo, 'object');
             assert.equal(memgraphInfo.storageInfo.edgeCount, null);
             assert.equal(memgraphInfo.storageInfo.averageDegree, null);
             assert.equal(memgraphInfo.storageInfo.memoryUsage, null);
             assert.equal(memgraphInfo.storageInfo.diskUsage, null);
-        }).timeout(5000);
+        });
 
         it('Should set storage info', function () {
             assert.doesNotReject(memgraph.setStorageInfo);
@@ -111,7 +113,7 @@ describe('MemGraph', function () {
                 function () { memgraph.runCypherQuery('SHOW STORAGE INFO;'); },
                 ApiError,
                 `Connection to Memgraph at ${memgraph.getUri()} isn't active`);
-        }).timeout(5000);
+        });
 
         it('Should close connection', function () {
             assert.doesNotReject(memgraph.close);

@@ -84,6 +84,32 @@ export default class Managraph {
         return memgraph.runCypherQuery(query);
     }
 
+    public removeMemgraph = async (id: string) => {
+        if (id == null) {
+            throw new ApiError(400, 'Memgraph ID must be provided');
+        }
+
+        let removed = false;
+
+        for (const [i, memgraph] of this.memgraphs.entries()) {
+            if (memgraph.getId() === id) {
+                await memgraph.setConnectionStatus();
+
+                if (memgraph.isActive()) {
+                    await memgraph.close();
+                }
+
+                this.memgraphs.splice(i, 1);
+
+                removed = true;
+            }
+        }
+
+        if (removed === false) {
+            throw new ApiError(404, `There isn't any tracking instance with ID ${id}`);
+        }
+    }
+
     private getMemgraph = (id: string) => {
         let memgraph;
 

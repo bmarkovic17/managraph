@@ -19,6 +19,8 @@ export default class Memgraph {
 
     public getUri = () => this.memgraphInfo.uri;
 
+    public isActive = () => this.memgraphInfo.active;
+
     public getMemgraphInfo = async () => {
         await this.refreshMemgraphInfo();
 
@@ -62,9 +64,9 @@ export default class Memgraph {
     }
 
     public runCypherQuery = async (query: string) => {
-        const isActive = (await this.getMemgraphInfo()).active;
+        await this.setConnectionStatus();
 
-        if (isActive) {
+        if (this.isActive()) {
             const session = this.driver.session();
 
             try {
