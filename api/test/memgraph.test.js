@@ -43,7 +43,7 @@ describe('MemGraph', function () {
             assert.equal(typeof memgraphInfo.storageInfo.averageDegree, 'number');
             assert.equal(typeof memgraphInfo.storageInfo.memoryUsage, 'number');
             assert.equal(typeof memgraphInfo.storageInfo.diskUsage, 'number');
-        }); // TODO: investigate slow performance sometimes
+        });
 
         it('Should set storage info', function () {
             assert.doesNotReject(memgraph.setStorageInfo);

@@ -59,7 +59,7 @@ describe('ManaGraph', function () {
             inactiveInstance = memgraphInfos.find(memgraphInfo => memgraphInfo.active === false);
 
             assert.equal(memgraphInfos.length, 2);
-        }); // TODO: investigate slow performance sometimes
+        });
 
         it('Should return a single memgraph info object for active instance', async function () {
             const memgraphInfos = await managraph.getMemgraphsInfo(activeInstance.id);
@@ -77,7 +77,7 @@ describe('ManaGraph', function () {
             assert.equal(typeof memgraphInfos[0].storageInfo.averageDegree, 'number');
             assert.equal(typeof memgraphInfos[0].storageInfo.memoryUsage, 'number');
             assert.equal(typeof memgraphInfos[0].storageInfo.diskUsage, 'number');
-        }); // TODO: investigate slow performance sometimes
+        });
 
         it('Should return a single memgraph info object for inactive instance', async function () {
             const memgraphInfos = await managraph.getMemgraphsInfo(inactiveInstance.id);
@@ -95,7 +95,7 @@ describe('ManaGraph', function () {
             assert.equal(memgraphInfos[0].storageInfo.averageDegree, null);
             assert.equal(memgraphInfos[0].storageInfo.memoryUsage, null);
             assert.equal(memgraphInfos[0].storageInfo.diskUsage, null);
-        }); // TODO: investigate slow performance sometimes
+        });
 
         it('Should run cypher query for active instance', async function () {
             assert(await managraph.runCypherQuery(activeInstance.id, 'SHOW STORAGE INFO;'));
