@@ -1,91 +1,93 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import config from './helpers/config.js';
 import { getErrorMessage, getErrorStatusCode } from './helpers/utilities.js';
 import Managraph from './classes/managraph.js';
-import MemgraphInfo from './types/memgraphInfo.js';
+import ApiError from './classes/apiError.js';
 
 const port = config.ExpressPort;
 const api = express();
 const managraph = new Managraph();
 
-api.use(express.json());
+api
+    .use(express.json());
 
 api
     .route('/api/v1/managraph')
-    .post(async (req, res) => {
-        try {
-            const memgraph = await managraph.addMemgraph(req.body.name, req.body.uri);
-
-            res
-                .status(201)
-                .set('Location', `/api/v1/managraph/${memgraph.id}`)
-                .json(memgraph);
-        } catch (error) {
-            res
-                .status(getErrorStatusCode(error))
-                .json(getErrorMessage(error));
-        }
-    })
-    .get(async (_req, res) => {
-        try {
-            let memgraphsInfo: MemgraphInfo[] = [];
-
-            try {
-                memgraphsInfo = await managraph.getMemgraphsInfo();
-            } catch (error) {
-                console.error(getErrorMessage(error));
-            }
-
-            res
-                .status(200)
-                .json(memgraphsInfo);
-        } catch (error) {
-            res
-                .status(getErrorStatusCode(error))
-                .json(getErrorMessage(error));
-        }
-    });
+    .post((request, response, next) =>
+        managraph
+            .addMemgraph(request.body.name, request.body.uri)
+            .then(memgraph =>
+                response
+                    .status(201)
+                    .set('Location', `/api/v1/managraph/${memgraph.id}`)
+                    .json(memgraph))
+            .catch(next)
+    )
+    .get((_request, response, next) =>
+        managraph
+            .getMemgraphsInfo()
+            .then(memgraphsInfo =>
+                response
+                    .status(200)
+                    .json(memgraphsInfo))
+            .catch(next)
+    );
 
 api
     .route('/api/v1/managraph/:id')
-    .post(async (req, res) => {
-        try {
-            const records = await managraph.runCypherQuery(req.params.id, req.body.query);
+    .post((request, response, next) =>
+        managraph
+            .runCypherQuery(request.params.id, request.body.query)
+            .then(records =>
+                response
+                    .status(200)
+                    .json(records))
+            .catch(next)
+    )
+    .get((request, response, next) => {
+        managraph
+            .getMemgraphsInfo(request.params.id)
+            .then(memgraphInfo =>
+                response
+                    .status(200)
+                    .json(memgraphInfo[0]))
+            .catch(next);
+    })
+    .delete((request, response, next) =>
+        managraph
+            .removeMemgraph(request.params.id)
+            .then(() =>
+                response
+                    .status(204)
+                    .json())
+            .catch(next)
+    );
 
-            res
-                .status(200)
-                .json(records);
-        } catch (error) {
-            res
+api
+    // Log errors to the console
+    .use((error: ApiError, request: Request, _response: Response, next: NextFunction) => {
+        console.error(new Date());
+        console.error('URL:', request.url);
+        console.error('Body:', request.body);
+        console.error(error.stack);
+
+        next(error);
+    })
+    // Handle API error
+    .use((error: ApiError, _request: Request, response: Response, next: NextFunction) => {
+        if (error instanceof ApiError) {
+            response
                 .status(getErrorStatusCode(error))
-                .json(getErrorMessage(error));
+                .json({ error: getErrorMessage(error) });
+        } else {
+            next(error);
         }
     })
-    .get(async (req, res) => {
-        try {
-            const memgraphInfo = (await managraph.getMemgraphsInfo(req.params.id))[0];
-
-            res
-                .status(200)
-                .json(memgraphInfo);
-        } catch (error) {
-            res
-                .status(getErrorStatusCode(error))
-                .json(getErrorMessage(error));
-        }
-    })
-    .delete(async (req, res) => {
-        try {
-            await managraph.removeMemgraph(req.params.id);
-
-            res
-                .status(204)
-                .json();
-        } catch (error) {
-            res
-                .status(getErrorStatusCode(error))
-                .json(getErrorMessage(error));
-        }
+    // Handle all other errors
+    .use((error: Error, _request: Request, response: Response, _next: NextFunction) => {
+        response
+            .status(500)
+            .json({ error: getErrorMessage(error) });
     });
 
 const server = api.listen(port, () => console.info(`Server started on http://localhost:${port}`));
