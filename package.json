@@ -1,6 +1,6 @@
 {
     "name": "managraph-api",
-    "description": "Minimalistic application for managing Managraph instances",
+    "description": "API for managing Managraph instances",
     "author": {
         "name": "Boris Marković",
         "email": "bmarkovic17@outlook.com"
@@ -17,7 +17,8 @@
     "keywords": [
         "managraph",
         "database",
-        "instance management"
+        "instance management",
+        "REST API"
     ],
     "main": "dist/api",
     "scripts": {
