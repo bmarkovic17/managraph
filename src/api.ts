@@ -5,6 +5,7 @@ import ApiError from './classes/apiError.js';
 import swaggerUi from 'swagger-ui-express';
 import Router from './routes/managraph.js';
 import { RegisterRoutes } from './routes.js';
+import cors from 'cors';
 
 const port = config.ExpressPort;
 const api = express();
@@ -16,6 +17,11 @@ api
 // Serve static files
 api
     .use(express.static('dist'));
+
+api
+    .use(cors({
+        origin: 'http://localhost:4200'
+    }));
 
 // Router
 api

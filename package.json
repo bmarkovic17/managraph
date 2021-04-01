@@ -1,6 +1,6 @@
 {
     "name": "managraph-api",
-    "description": "API for managing Managraph instances",
+    "description": "API for managing MemGraph instances",
     "author": {
         "name": "Boris Marković",
         "email": "bmarkovic17@outlook.com"
@@ -12,10 +12,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/bmarkovic17/managraph.git"
+        "url": "https://github.com/bmarkovic17/managraph-api.git"
     },
     "keywords": [
         "managraph",
+        "memgraph",
         "database",
         "instance management",
         "REST API"
@@ -32,6 +33,7 @@
     },
     "devDependencies": {
         "@tsconfig/node14": "^1.0.0",
+        "@types/cors": "^2.8.10",
         "@types/express": "^4.17.11",
         "@types/node": "^14.14.36",
         "@types/swagger-ui-express": "^4.1.2",
@@ -50,6 +52,7 @@
     },
     "dependencies": {
         "camelcase": "^6.2.0",
+        "cors": "^2.8.5",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
         "nanoid": "^3.1.22",
