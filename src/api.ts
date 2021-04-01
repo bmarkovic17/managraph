@@ -1,68 +1,41 @@
 import express, { NextFunction, Request, Response } from 'express';
 import config from './helpers/config.js';
 import { getErrorMessage, getErrorStatusCode } from './helpers/utilities.js';
-import Managraph from './classes/managraph.js';
 import ApiError from './classes/apiError.js';
+import swaggerUi from 'swagger-ui-express';
+import Router from './routes/managraph.js';
+import { RegisterRoutes } from './routes.js';
 
 const port = config.ExpressPort;
 const api = express();
-const managraph = new Managraph();
 
+// Body parser
 api
     .use(express.json());
 
+// Serve static files
 api
-    .route('/api/v1/managraph')
-    .post((request, response, next) =>
-        managraph
-            .addMemgraph(request.body.name, request.body.uri)
-            .then(memgraph =>
-                response
-                    .status(201)
-                    .set('Location', `/api/v1/managraph/${memgraph.id}`)
-                    .json(memgraph))
-            .catch(next)
-    )
-    .get((_request, response, next) =>
-        managraph
-            .getMemgraphsInfo()
-            .then(memgraphsInfo =>
-                response
-                    .status(200)
-                    .json(memgraphsInfo))
-            .catch(next)
+    .use(express.static('dist'));
+
+// Router
+api
+    .use(Router);
+
+// Swagger
+api
+    .use(
+        '/',
+        swaggerUi.serve,
+        swaggerUi.setup(undefined, {
+            swaggerOptions: {
+                url: '/swagger.json'
+            }
+        })
     );
 
-api
-    .route('/api/v1/managraph/:id')
-    .post((request, response, next) =>
-        managraph
-            .runCypherQuery(request.params.id, request.body.query)
-            .then(records =>
-                response
-                    .status(200)
-                    .json(records))
-            .catch(next)
-    )
-    .get((request, response, next) => {
-        managraph
-            .getMemgraphsInfo(request.params.id)
-            .then(memgraphInfo =>
-                response
-                    .status(200)
-                    .json(memgraphInfo[0]))
-            .catch(next);
-    })
-    .delete((request, response, next) =>
-        managraph
-            .removeMemgraph(request.params.id)
-            .then(() =>
-                response
-                    .status(204)
-                    .json())
-            .catch(next)
-    );
+RegisterRoutes(api);
 
+// Error handling
 api
     // Log errors to the console
     .use((error: ApiError, request: Request, _response: Response, next: NextFunction) => {
@@ -90,13 +63,16 @@ api
             .json({ error: getErrorMessage(error) });
     });
 
+// Start server
 const server = api.listen(port, () => console.info(`Server started on http://localhost:${port}`));
 
+// Graceful exit on uncaught exception
 process.on('uncaughtException', error => {
     console.error(getErrorMessage(error));
     process.exit(1);
 });
 
+// Graceful exit on SIGTERM signal
 process.on('SIGTERM', () =>
     server.close(() =>
         console.info('Process terminated')));

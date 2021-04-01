@@ -1,5 +1,7 @@
 # ManaGraph API
 
+API REST service with endpoints for tracking basic data about MemGraph database instances.
+
 ## System requirements
 
 In order to be able to run this app Node.js version greater or equal to 15.3.0 should be installed, since this app is written as an ES module and prior versions of Node had it as an experimental feature, therefore it is not officialy supported or tested on versions prior to 15.3.0.
