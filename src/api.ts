@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import Router from './routes/managraph.js';
 import { RegisterRoutes } from './routes.js';
 import cors from 'cors';
+import morgan from 'morgan';
 
 const port = config.ExpressPort;
 const api = express();
@@ -22,6 +23,12 @@ api
     .use(cors({
         origin: 'http://localhost:4200'
     }));
+
+// Logging
+if (config.LogAllRequests) {
+    api
+        .use(morgan(':method :url :status :res[content-length] - :response-time ms'));
+}
 
 // Router
 api

@@ -10,7 +10,7 @@ export default class Memgraph {
 
     constructor (memgraphInfo: MemgraphInfo) {
         this.memgraphInfo = memgraphInfo;
-        this.driver = neo4j.driver(`bolt://${memgraphInfo.uri}`);
+        this.driver = neo4j.driver(`bolt://${memgraphInfo.uri}`, undefined, { connectionTimeout: 1000 });
     };
 
     public getId = () => this.memgraphInfo.id;

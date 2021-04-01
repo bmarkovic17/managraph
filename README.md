@@ -13,3 +13,4 @@ Configuration of this REST API service is possible via an .env file which should
 1. EXPRESS_PORT - a numeric key which sets the port of the express app. In case of an invalid or missing value, port number 3000 will be used.
 2. TEST_MEMGRAPH_INSTANCE_NAME - an arbitrary instance name used by unit tests. Default value for this parameter is "memgraph"
 3. TEST_MEMGRAPH_INSTANCE_URI - should be an URI to a valid active memgraph instance used by unit tests. Default value for this parameter is "localhost:7687"
+3. LOG_ALL_REQUESTS - a boolean flag which toggles loggin of all requests to the console. Default value is false

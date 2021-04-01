@@ -8,5 +8,6 @@ export default {
     ExpressPort: isNaN(port) ? 3000 : port,
     IsNotProduction: process.env.NODE_ENV !== 'production',
     TestInstanceName: process.env.TEST_MEMGRAPH_INSTANCE_NAME ?? 'memgraph',
-    TestInstanceUri: process.env.TEST_MEMGRAPH_INSTANCE_URI ?? 'localhost:7687'
+    TestInstanceUri: process.env.TEST_MEMGRAPH_INSTANCE_URI ?? 'localhost:7687',
+    LogAllRequests: (process.env.LOG_ALL_REQUESTS ?? 'false') === 'true'
 };
