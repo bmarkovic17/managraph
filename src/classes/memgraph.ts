@@ -3,6 +3,7 @@ import camelCase from 'camelcase';
 import MemgraphInfo from '../types/memgraphInfo.js';
 import ApiError from './apiError.js';
 import { getNumber, initStorageInfo } from '../helpers/utilities.js';
+import config from '../helpers/config.js';
 
 export default class Memgraph {
     private driver;
@@ -10,7 +11,7 @@ export default class Memgraph {
 
     constructor (memgraphInfo: MemgraphInfo) {
         this.memgraphInfo = memgraphInfo;
-        this.driver = neo4j.driver(`bolt://${memgraphInfo.uri}`, undefined, { connectionTimeout: 1000 });
+        this.driver = neo4j.driver(`bolt://${memgraphInfo.uri}`, undefined, { connectionTimeout: config.ConnectionTimeout });
     };
 
     public getId = () => this.memgraphInfo.id;
@@ -27,44 +28,8 @@ export default class Memgraph {
         return this.memgraphInfo;
     }
 
-    public setStorageInfo = async () => {
-        const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
-
-        try {
-            const result = await session.run('SHOW STORAGE INFO;');
-            const records = result.records;
-
-            records.forEach(record => {
-                const key: string = camelCase(record.get('storage info'));
-
-                if (key in this.memgraphInfo.storageInfo) {
-                    this.memgraphInfo.storageInfo[key] = getNumber(record.get('value'));
-                }
-            });
-        } catch {
-            this.memgraphInfo.active = false;
-            this.memgraphInfo.storageInfo = initStorageInfo();
-        } finally {
-            await session.close();
-        }
-    };
-
-    public setConnectionStatus = async () => {
-        try {
-            const serverInfo = await this.driver.verifyConnectivity();
-
-            if (serverInfo.address != null) {
-                this.memgraphInfo.active = true;
-            } else {
-                this.memgraphInfo.active = false;
-            }
-        } catch (error) {
-            this.memgraphInfo.active = false;
-        }
-    }
-
     public runCypherQuery = async (query: string) => {
-        await this.setConnectionStatus();
+        await this.refreshMemgraphInfo();
 
         if (this.isActive()) {
             const session = this.driver.session();
@@ -84,9 +49,29 @@ export default class Memgraph {
     public close = () =>
         this.driver.close();
 
-    private refreshMemgraphInfo = () =>
-        Promise.all([
-            this.setConnectionStatus(),
-            this.setStorageInfo()
-        ]);
+    public refreshMemgraphInfo = async () => {
+        const session = this.driver.session({ defaultAccessMode: neo4j.session.READ });
+
+        try {
+            const result = await session.run('SHOW STORAGE INFO;');
+            const records = result.records;
+
+            records.forEach(record => {
+                const key: string = camelCase(record.get('storage info'));
+
+                if (key in this.memgraphInfo.storageInfo) {
+                    this.memgraphInfo.storageInfo[key] = getNumber(record.get('value'));
+
+                    if (this.memgraphInfo.storageInfo[key] != null) {
+                        this.memgraphInfo.active = true;
+                    }
+                }
+            });
+        } catch {
+            this.memgraphInfo.active = false;
+            this.memgraphInfo.storageInfo = initStorageInfo();
+        } finally {
+            await session.close();
+        }
+    }
 }

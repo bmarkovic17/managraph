@@ -10,8 +10,6 @@ const instanceUri = config.TestInstanceUri;
 const instanceUriReversed = instanceUri.split('').reverse().join('');
 
 describe('ManaGraph', function () {
-    this.timeout(5000);
-
     describe('Valid instance', function () {
         let activeInstance;
         let inactiveInstance;

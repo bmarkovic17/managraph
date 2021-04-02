@@ -93,7 +93,7 @@ export default class Managraph {
 
         for (const [i, memgraph] of this.memgraphs.entries()) {
             if (memgraph.getId() === id) {
-                await memgraph.setConnectionStatus();
+                await memgraph.refreshMemgraphInfo();
 
                 if (memgraph.isActive()) {
                     await memgraph.close();

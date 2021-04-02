@@ -7,8 +7,6 @@ import { initMemgraphInfo } from '../dist/helpers/utilities.js';
 let memgraph;
 
 describe('MemGraph', function () {
-    this.timeout(5000);
-
     describe('Active', function () {
         before(function () {
             const memgraphInfo = initMemgraphInfo(config.TestInstanceName, config.TestInstanceUri);
@@ -29,7 +27,7 @@ describe('MemGraph', function () {
         });
 
         it('Should return active connection', async function () {
-            await memgraph.setConnectionStatus();
+            await memgraph.refreshMemgraphInfo();
 
             assert.equal(memgraph.isActive(), true);
         });
@@ -45,12 +43,8 @@ describe('MemGraph', function () {
             assert.equal(typeof memgraphInfo.storageInfo.diskUsage, 'number');
         });
 
-        it('Should set storage info', function () {
-            assert.doesNotReject(memgraph.setStorageInfo);
-        });
-
-        it('Should set connection status', function () {
-            assert.doesNotReject(memgraph.setConnectionStatus);
+        it('Should set storage info and connection status', function () {
+            assert.doesNotReject(memgraph.refreshMemgraphInfo);
         });
 
         it('Should run cypher query', async function () {
@@ -84,7 +78,7 @@ describe('MemGraph', function () {
         });
 
         it('Should return not active connection', async function () {
-            await memgraph.setConnectionStatus();
+            await memgraph.refreshMemgraphInfo();
 
             assert.equal(memgraph.isActive(), false);
         });
@@ -100,12 +94,8 @@ describe('MemGraph', function () {
             assert.equal(memgraphInfo.storageInfo.diskUsage, null);
         });
 
-        it('Should set storage info', function () {
-            assert.doesNotReject(memgraph.setStorageInfo);
-        });
-
-        it('Should set connection status', function () {
-            assert.doesNotReject(memgraph.setConnectionStatus);
+        it('Should set storage info and connection status', function () {
+            assert.doesNotReject(memgraph.refreshMemgraphInfo);
         });
 
         it('Should reject on cypher query run', function () {
