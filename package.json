@@ -23,11 +23,11 @@
     ],
     "main": "dist/api",
     "scripts": {
-        "prepare": "husky install && husky add .husky/pre-commit \"npm run build && npm run test\"",
+        "prepare": "husky install",
         "lint": "eslint src/**/* && eslint test/**/*",
         "prebuild": "concurrently \"npm run lint\" \"tsoa spec-and-routes\"",
         "build": "tsc",
-        "test": "mocha",
+        "test": "tsc && mocha",
         "prestart": "npm run build",
         "start": "node ."
     },
